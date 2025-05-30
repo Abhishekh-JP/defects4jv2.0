@@ -1,0 +1,325 @@
+commit 8ee0ed532e4ddbf2746d802f9926b9e3d0116cc5
+Author: Emmanuel Bourg <ebourg@apache.org>
+Date:   Tue Jul 22 07:55:36 2008 +0000
+
+    Added the missing @since tags for the classes and methods added in CLI 1.1
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/cli/branches/cli-1.x@678667 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -83,64 +83,68 @@
+     public CommandLine parse(Options options, String[] arguments)
+                       throws ParseException
+     {
+         return parse(options, arguments, null, false);
+     }
+ 
+     /**
+      * Parse the arguments according to the specified options and
+      * properties.
+      *
+      * @param options the specified Options
+      * @param arguments the command line arguments
+      * @param properties command line option name-value pairs
+      * @return the list of atomic option and value tokens
+      *
+      * @throws ParseException if there are any problems encountered
+      * while parsing the command line tokens.
++     *
++     * @since 1.1
+      */
+     public CommandLine parse(Options options, String[] arguments, 
+                              Properties properties)
+         throws ParseException
+     {
+         return parse(options, arguments, properties, false);
+     }
+ 
+     /**
+      * <p>Parses the specified <code>arguments</code> 
+      * based on the specifed {@link Options}.</p>
+      *
+      * @param options the <code>Options</code>
+      * @param arguments the <code>arguments</code>
+      * @param stopAtNonOption specifies whether to stop 
+      * interpreting the arguments when a non option has 
+      * been encountered and to add them to the CommandLines
+      * args list.
+      *
+      * @return the <code>CommandLine</code>
+      * @throws ParseException if an error occurs when parsing the
+      * arguments.
+      */
+     public CommandLine parse(Options options, String[] arguments, 
+                              boolean stopAtNonOption)
+         throws ParseException
+     {
+         return parse(options, arguments, null, stopAtNonOption);
+     }
+ 
+     /**
+      * Parse the arguments according to the specified options and
+      * properties.
+      *
+      * @param options the specified Options
+      * @param arguments the command line arguments
+      * @param properties command line option name-value pairs
+      * @param stopAtNonOption stop parsing the arguments when the first
+      * non option is encountered.
+      *
+      * @return the list of atomic option and value tokens
+      *
+      * @throws ParseException if there are any problems encountered
+      * while parsing the command line tokens.
++     *
++     * @since 1.1
+      */
+     public CommandLine parse(Options options, String[] arguments, 
+                              Properties properties, boolean stopAtNonOption)
+
+commit 9b2b8038b52be022e42c8c7fdf26e236888f94c5
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Dec 9 23:47:26 2002 +0000
+
+    checkstyle fixes
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129857 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -113,67 +112,64 @@
+-    public CommandLine parse( Options options, 
+-                              String[] arguments ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments)
++                      throws ParseException
+     {
+-        return parse( options, arguments, null, false );
++        return parse(options, arguments, null, false);
+     }
+ 
+     /**
+      * Parse the arguments according to the specified options and
+      * properties.
+      *
+      * @param options the specified Options
+      * @param arguments the command line arguments
+      * @param properties command line option name-value pairs
+      * @return the list of atomic option and value tokens
+      *
+      * @throws ParseException if there are any problems encountered
+      * while parsing the command line tokens.
+      */
+-    public CommandLine parse( Options options, 
+-                              String[] arguments,
+-                              Properties properties ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments, 
++                             Properties properties)
++        throws ParseException
+     {
+-        return parse( options, arguments, properties, false );
++        return parse(options, arguments, properties, false);
+     }
+ 
+     /**
+      * <p>Parses the specified <code>arguments</code> 
+      * based on the specifed {@link Options}.</p>
+      *
+      * @param options the <code>Options</code>
+      * @param arguments the <code>arguments</code>
+      * @param stopAtNonOption specifies whether to stop 
+      * interpreting the arguments when a non option has 
+      * been encountered and to add them to the CommandLines
+      * args list.
+      *
+      * @return the <code>CommandLine</code>
+      * @throws ParseException if an error occurs when parsing the
+      * arguments.
+      */
+-    public CommandLine parse( Options options, 
+-                              String[] arguments,
+-                              boolean stopAtNonOption ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments, 
++                             boolean stopAtNonOption)
++        throws ParseException
+     {
+-        return parse( options, arguments, null, stopAtNonOption );
++        return parse(options, arguments, null, stopAtNonOption);
+     }
+ 
+     /**
+      * Parse the arguments according to the specified options and
+      * properties.
+      *
+      * @param options the specified Options
+      * @param arguments the command line arguments
+      * @param properties command line option name-value pairs
++     * @param stopAtNonOption stop parsing the arguments when the first
++     * non option is encountered.
++     *
+      * @return the list of atomic option and value tokens
+      *
+      * @throws ParseException if there are any problems encountered
+      * while parsing the command line tokens.
+      */
+-    public CommandLine parse( Options opts, 
+-                              String[] arguments, 
+-                              Properties properties,
+-                              boolean stopAtNonOption ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments, 
++                             Properties properties, boolean stopAtNonOption)
+
+commit 347bbeb8f98a49744501ac50850457ba8751d545
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Nov 18 08:41:26 2002 +0000
+
+    refactored the option string handling, added property support for options with an argument value
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129846 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -111,24 +113,67 @@
+-    public CommandLine parse( Options options, String[] arguments ) 
++    public CommandLine parse( Options options, 
++                              String[] arguments ) 
+     throws ParseException 
+     {
+-        return parse( options, arguments, false );
++        return parse( options, arguments, null, false );
++    }
++
++    /**
++     * Parse the arguments according to the specified options and
++     * properties.
++     *
++     * @param options the specified Options
++     * @param arguments the command line arguments
++     * @param properties command line option name-value pairs
++     * @return the list of atomic option and value tokens
++     *
++     * @throws ParseException if there are any problems encountered
++     * while parsing the command line tokens.
++     */
++    public CommandLine parse( Options options, 
++                              String[] arguments,
++                              Properties properties ) 
++    throws ParseException 
++    {
++        return parse( options, arguments, properties, false );
+     }
+ 
+     /**
+      * <p>Parses the specified <code>arguments</code> 
+      * based on the specifed {@link Options}.</p>
+      *
+      * @param options the <code>Options</code>
+      * @param arguments the <code>arguments</code>
+      * @param stopAtNonOption specifies whether to stop 
+      * interpreting the arguments when a non option has 
+      * been encountered and to add them to the CommandLines
+      * args list.
++     *
+      * @return the <code>CommandLine</code>
+      * @throws ParseException if an error occurs when parsing the
+      * arguments.
+      */
++    public CommandLine parse( Options options, 
++                              String[] arguments,
++                              boolean stopAtNonOption ) 
++    throws ParseException 
++    {
++        return parse( options, arguments, null, stopAtNonOption );
++    }
++
++    /**
++     * Parse the arguments according to the specified options and
++     * properties.
++     *
++     * @param options the specified Options
++     * @param arguments the command line arguments
++     * @param properties command line option name-value pairs
++     * @return the list of atomic option and value tokens
++     *
++     * @throws ParseException if there are any problems encountered
++     * while parsing the command line tokens.
++     */
+     public CommandLine parse( Options opts, 
+                               String[] arguments, 
++                              Properties properties,
+                               boolean stopAtNonOption ) 
+     throws ParseException 
+
+commit d30f12f8fc30ddc2c30a08beea0c10d6d8f2029b
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sun Sep 1 22:54:56 2002 +0000
+
+    allowed characters are now isJavaIdentifierPart, added javadoc to Parser, minor refactoring for required options
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129809 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -19,10 +111,24 @@
+-    public CommandLine parse( Options opts, String[] args ) 
++    public CommandLine parse( Options options, String[] arguments ) 
+     throws ParseException 
+     {
+-        return parse( opts, args, false );
++        return parse( options, arguments, false );
+     }
+ 
++    /**
++     * <p>Parses the specified <code>arguments</code> 
++     * based on the specifed {@link Options}.</p>
++     *
++     * @param options the <code>Options</code>
++     * @param arguments the <code>arguments</code>
++     * @param stopAtNonOption specifies whether to stop 
++     * interpreting the arguments when a non option has 
++     * been encountered and to add them to the CommandLines
++     * args list.
++     * @return the <code>CommandLine</code>
++     * @throws ParseException if an error occurs when parsing the
++     * arguments.
++     */
+     public CommandLine parse( Options opts, 
+-                              String[] args, 
++                              String[] arguments, 
+                               boolean stopAtNonOption ) 
+     throws ParseException 
+
+commit dde69934d7f0bee13e4cd1fc99a7d60ce95a0c78
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sat Aug 24 22:15:31 2002 +0000
+
+    separated the argument flattening from the Option processing
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129804 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- /dev/null
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -0,0 +19,10 @@
++    public CommandLine parse( Options opts, String[] args ) 
++    throws ParseException 
++    {
++        return parse( opts, args, false );
++    }
++
++    public CommandLine parse( Options opts, 
++                              String[] args, 
++                              boolean stopAtNonOption ) 
++    throws ParseException 
