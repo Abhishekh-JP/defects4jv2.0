@@ -1,0 +1,669 @@
+commit 298804b71d4e5f8b621f48a300f421229a3f5c86
+Author: Henri Yandell <bayard@apache.org>
+Date:   Thu May 8 06:43:14 2008 +0000
+
+    Applying Henning's patch to make the Parser more extendable - CLI-142
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/cli/branches/cli-1.x@654429 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -130,99 +144,98 @@
+     public CommandLine parse(Options options, String[] arguments, 
+                              Properties properties, boolean stopAtNonOption)
+         throws ParseException
+     {
+-        // initialise members
+-        this.options = options;
+-
+         // clear out the data in options in case it's been used before (CLI-71)
+         for (Iterator it = options.helpOptions().iterator(); it.hasNext();) {
+             Option opt = (Option) it.next();
+             opt.clearValues();
+         }
+ 
+-        requiredOptions = options.getRequiredOptions();
++        // initialise members
++        setOptions(options);
++
+         cmd = new CommandLine();
+ 
+         boolean eatTheRest = false;
+ 
+         if (arguments == null)
+         {
+             arguments = new String[0];
+         }
+ 
+-        List tokenList = Arrays.asList(flatten(this.options, 
++        List tokenList = Arrays.asList(flatten(getOptions(), 
+                                                arguments, 
+                                                stopAtNonOption));
+ 
+         ListIterator iterator = tokenList.listIterator();
+ 
+         // process each flattened token
+         while (iterator.hasNext())
+         {
+             String t = (String) iterator.next();
+ 
+             // the value is the double-dash
+             if ("--".equals(t))
+             {
+                 eatTheRest = true;
+             }
+ 
+             // the value is a single dash
+             else if ("-".equals(t))
+             {
+                 if (stopAtNonOption)
+                 {
+                     eatTheRest = true;
+                 }
+                 else
+                 {
+                     cmd.addArg(t);
+                 }
+             }
+ 
+             // the value is an option
+             else if (t.startsWith("-"))
+             {
+-                if (stopAtNonOption && !options.hasOption(t))
++                if (stopAtNonOption && !getOptions().hasOption(t))
+                 {
+                     eatTheRest = true;
+                     cmd.addArg(t);
+                 }
+                 else
+                 {
+                     processOption(t, iterator);
+                 }
+             }
+ 
+             // the value is an argument
+             else
+             {
+                 cmd.addArg(t);
+ 
+                 if (stopAtNonOption)
+                 {
+                     eatTheRest = true;
+                 }
+             }
+ 
+             // eat the remaining tokens
+             if (eatTheRest)
+             {
+                 while (iterator.hasNext())
+                 {
+                     String str = (String) iterator.next();
+ 
+                     // ensure only one double-dash is added
+                     if (!"--".equals(str))
+                     {
+                         cmd.addArg(str);
+                     }
+                 }
+             }
+         }
+ 
+         processProperties(properties);
+         checkRequiredOptions();
+ 
+         return cmd;
+     }
+
+commit c155cebd4127367a7b649ca167c0c69284cc066b
+Author: Henri Yandell <bayard@apache.org>
+Date:   Thu May 24 20:07:06 2007 +0000
+
+    Applying Brian Egge and my work from CLI-71 to fix a lingering data problem in the parser and to confirm that other bugs have already been fixed
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/branches/cli-1.0.x@541408 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -129,92 +129,99 @@
+     public CommandLine parse(Options options, String[] arguments, 
+                              Properties properties, boolean stopAtNonOption)
+         throws ParseException
+     {
+         // initialise members
+         this.options = options;
++
++        // clear out the data in options in case it's been used before (CLI-71)
++        for (Iterator it = options.helpOptions().iterator(); it.hasNext();) {
++            Option opt = (Option) it.next();
++            opt.clearValues();
++        }
++
+         requiredOptions = options.getRequiredOptions();
+         cmd = new CommandLine();
+ 
+         boolean eatTheRest = false;
+ 
+         if (arguments == null)
+         {
+             arguments = new String[0];
+         }
+ 
+         List tokenList = Arrays.asList(flatten(this.options, 
+                                                arguments, 
+                                                stopAtNonOption));
+ 
+         ListIterator iterator = tokenList.listIterator();
+ 
+         // process each flattened token
+         while (iterator.hasNext())
+         {
+             String t = (String) iterator.next();
+ 
+             // the value is the double-dash
+             if ("--".equals(t))
+             {
+                 eatTheRest = true;
+             }
+ 
+             // the value is a single dash
+             else if ("-".equals(t))
+             {
+                 if (stopAtNonOption)
+                 {
+                     eatTheRest = true;
+                 }
+                 else
+                 {
+                     cmd.addArg(t);
+                 }
+             }
+ 
+             // the value is an option
+             else if (t.startsWith("-"))
+             {
+                 if (stopAtNonOption && !options.hasOption(t))
+                 {
+                     eatTheRest = true;
+                     cmd.addArg(t);
+                 }
+                 else
+                 {
+                     processOption(t, iterator);
+                 }
+             }
+ 
+             // the value is an argument
+             else
+             {
+                 cmd.addArg(t);
+ 
+                 if (stopAtNonOption)
+                 {
+                     eatTheRest = true;
+                 }
+             }
+ 
+             // eat the remaining tokens
+             if (eatTheRest)
+             {
+                 while (iterator.hasNext())
+                 {
+                     String str = (String) iterator.next();
+ 
+                     // ensure only one double-dash is added
+                     if (!"--".equals(str))
+                     {
+                         cmd.addArg(str);
+                     }
+                 }
+             }
+         }
+ 
+         processProperties(properties);
+         checkRequiredOptions();
+ 
+         return cmd;
+     }
+
+commit 9b2b8038b52be022e42c8c7fdf26e236888f94c5
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Dec 9 23:47:26 2002 +0000
+
+    checkstyle fixes
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129857 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -175,70 +174,92 @@
+-    public CommandLine parse( Options opts, 
+-                              String[] arguments, 
+-                              Properties properties,
+-                              boolean stopAtNonOption ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments, 
++                             Properties properties, boolean stopAtNonOption)
++        throws ParseException
+     {
+         // initialise members
+-        options = opts;
++        this.options = options;
+         requiredOptions = options.getRequiredOptions();
+         cmd = new CommandLine();
+ 
+         boolean eatTheRest = false;
+ 
+-        if( arguments == null ) {
++        if (arguments == null)
++        {
+             arguments = new String[0];
+         }
+ 
+-        List tokenList = Arrays.asList( flatten( opts, arguments, stopAtNonOption ) );
++        List tokenList = Arrays.asList(flatten(this.options, 
++                                               arguments, 
++                                               stopAtNonOption));
++
+         ListIterator iterator = tokenList.listIterator();
+ 
+         // process each flattened token
+-        while( iterator.hasNext() ) {
+-            String t = (String)iterator.next();
++        while (iterator.hasNext())
++        {
++            String t = (String) iterator.next();
+ 
+             // the value is the double-dash
+-            if( "--".equals( t ) ) {
++            if ("--".equals(t))
++            {
+                 eatTheRest = true;
+             }
++
+             // the value is a single dash
+-            else if( "-".equals( t ) ) {
+-                if( stopAtNonOption ) {
++            else if ("-".equals(t))
++            {
++                if (stopAtNonOption)
++                {
+                     eatTheRest = true;
+                 }
+-                else {
+-                    cmd.addArg(t );
++                else
++                {
++                    cmd.addArg(t);
+                 }
+             }
++
+             // the value is an option
+-            else if( t.startsWith( "-" ) ) {
+-                if ( stopAtNonOption && !options.hasOption( t ) ) {
++            else if (t.startsWith("-"))
++            {
++                if (stopAtNonOption && !options.hasOption(t))
++                {
+                     eatTheRest = true;
+-                    cmd.addArg( t );
++                    cmd.addArg(t);
+                 }
+-                else {
+-                    processOption( t, iterator );
++                else
++                {
++                    processOption(t, iterator);
+                 }
+             }
++
+             // the value is an argument
+-            else {
+-                cmd.addArg( t );
+-                if( stopAtNonOption ) {
++            else
++            {
++                cmd.addArg(t);
++
++                if (stopAtNonOption)
++                {
+                     eatTheRest = true;
+                 }
+             }
+ 
+             // eat the remaining tokens
+-            if( eatTheRest ) {
+-                while( iterator.hasNext() ) {
+-                    String str = (String)iterator.next();
++            if (eatTheRest)
++            {
++                while (iterator.hasNext())
++                {
++                    String str = (String) iterator.next();
++
+                     // ensure only one double-dash is added
+-                    if( !"--".equals( str ) ) {
+-                        cmd.addArg( str );
++                    if (!"--".equals(str))
++                    {
++                        cmd.addArg(str);
+                     }
+                 }
+             }
+         }
+-        processProperties( properties );
++
++        processProperties(properties);
+         checkRequiredOptions();
++
+         return cmd;
+     }
+
+commit 347bbeb8f98a49744501ac50850457ba8751d545
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Nov 18 08:41:26 2002 +0000
+
+    refactored the option string handling, added property support for options with an argument value
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129846 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -131,64 +175,70 @@
+     public CommandLine parse( Options opts, 
+                               String[] arguments, 
++                              Properties properties,
+                               boolean stopAtNonOption ) 
+     throws ParseException 
+     {
+         // initialise members
+         options = opts;
+         requiredOptions = options.getRequiredOptions();
+         cmd = new CommandLine();
+ 
+         boolean eatTheRest = false;
+ 
++        if( arguments == null ) {
++            arguments = new String[0];
++        }
++
+         List tokenList = Arrays.asList( flatten( opts, arguments, stopAtNonOption ) );
+         ListIterator iterator = tokenList.listIterator();
+ 
+         // process each flattened token
+         while( iterator.hasNext() ) {
+             String t = (String)iterator.next();
+ 
+             // the value is the double-dash
+             if( "--".equals( t ) ) {
+                 eatTheRest = true;
+             }
+             // the value is a single dash
+             else if( "-".equals( t ) ) {
+                 if( stopAtNonOption ) {
+                     eatTheRest = true;
+                 }
+                 else {
+                     cmd.addArg(t );
+                 }
+             }
+             // the value is an option
+             else if( t.startsWith( "-" ) ) {
+                 if ( stopAtNonOption && !options.hasOption( t ) ) {
+                     eatTheRest = true;
+                     cmd.addArg( t );
+                 }
+                 else {
+                     processOption( t, iterator );
+                 }
+             }
+             // the value is an argument
+             else {
+                 cmd.addArg( t );
+                 if( stopAtNonOption ) {
+                     eatTheRest = true;
+                 }
+             }
+ 
+             // eat the remaining tokens
+             if( eatTheRest ) {
+                 while( iterator.hasNext() ) {
+                     String str = (String)iterator.next();
+                     // ensure only one double-dash is added
+                     if( !"--".equals( str ) ) {
+                         cmd.addArg( str );
+                     }
+                 }
+             }
+         }
++        processProperties( properties );
+         checkRequiredOptions();
+         return cmd;
+     }
+
+commit d30f12f8fc30ddc2c30a08beea0c10d6d8f2029b
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sun Sep 1 22:54:56 2002 +0000
+
+    allowed characters are now isJavaIdentifierPart, added javadoc to Parser, minor refactoring for required options
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129809 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -25,54 +131,64 @@
+     public CommandLine parse( Options opts, 
+-                              String[] args, 
++                              String[] arguments, 
+                               boolean stopAtNonOption ) 
+     throws ParseException 
+     {
++        // initialise members
+         options = opts;
+         requiredOptions = options.getRequiredOptions();
+-        String[] tokens = flatten( opts, args, stopAtNonOption );
+-        List tokenList = Arrays.asList( tokens );
+-        ListIterator iterator = tokenList.listIterator();
+         cmd = new CommandLine();
++
+         boolean eatTheRest = false;
++
++        List tokenList = Arrays.asList( flatten( opts, arguments, stopAtNonOption ) );
++        ListIterator iterator = tokenList.listIterator();
++
++        // process each flattened token
+         while( iterator.hasNext() ) {
+             String t = (String)iterator.next();
++
++            // the value is the double-dash
+             if( "--".equals( t ) ) {
+                 eatTheRest = true;
+             }
+-            else if( t.startsWith( "-" ) ) {
+-                if( t.length() == 1 ) {
+-                    // not an option, so just drop it on the argument list
+-                    if ( stopAtNonOption ) {
+-                        eatTheRest = true;
+-                    }
+-                    else {
+-                        cmd.addArg( t );
+-                    }
++            // the value is a single dash
++            else if( "-".equals( t ) ) {
++                if( stopAtNonOption ) {
++                    eatTheRest = true;
++                }
++                else {
++                    cmd.addArg(t );
+                 }
+-                else if ( stopAtNonOption && !options.hasOption( t ) ) {
++            }
++            // the value is an option
++            else if( t.startsWith( "-" ) ) {
++                if ( stopAtNonOption && !options.hasOption( t ) ) {
+                     eatTheRest = true;
+                     cmd.addArg( t );
+                 }
+                 else {
+                     processOption( t, iterator );
+                 }
+             }
++            // the value is an argument
+             else {
+                 cmd.addArg( t );
+                 if( stopAtNonOption ) {
+                     eatTheRest = true;
+                 }
+             }
+ 
++            // eat the remaining tokens
+             if( eatTheRest ) {
+                 while( iterator.hasNext() ) {
+                     String str = (String)iterator.next();
++                    // ensure only one double-dash is added
+                     if( !"--".equals( str ) ) {
+                         cmd.addArg( str );
+                     }
+                 }
+             }
+         }
+         checkRequiredOptions();
+         return cmd;
+     }
+
+commit fc0723b7aa9d4f05dd7ac5fb6131efe419da31d1
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sat Aug 31 17:53:11 2002 +0000
+
+    bug #12210 fixed
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129808 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -25,47 +25,54 @@
+     public CommandLine parse( Options opts, 
+                               String[] args, 
+                               boolean stopAtNonOption ) 
+     throws ParseException 
+     {
+         options = opts;
+         requiredOptions = options.getRequiredOptions();
+         String[] tokens = flatten( opts, args, stopAtNonOption );
+         List tokenList = Arrays.asList( tokens );
+         ListIterator iterator = tokenList.listIterator();
+         cmd = new CommandLine();
+         boolean eatTheRest = false;
+         while( iterator.hasNext() ) {
+             String t = (String)iterator.next();
+             if( "--".equals( t ) ) {
+                 eatTheRest = true;
+             }
+             else if( t.startsWith( "-" ) ) {
+                 if( t.length() == 1 ) {
+                     // not an option, so just drop it on the argument list
+                     if ( stopAtNonOption ) {
+                         eatTheRest = true;
+                     }
+                     else {
+                         cmd.addArg( t );
+                     }
+                 }
++                else if ( stopAtNonOption && !options.hasOption( t ) ) {
++                    eatTheRest = true;
++                    cmd.addArg( t );
++                }
+                 else {
+                     processOption( t, iterator );
+                 }
+             }
+             else {
+                 cmd.addArg( t );
+                 if( stopAtNonOption ) {
+                     eatTheRest = true;
+                 }
+             }
+ 
+             if( eatTheRest ) {
+                 while( iterator.hasNext() ) {
+-                    cmd.addArg( (String)iterator.next() );
++                    String str = (String)iterator.next();
++                    if( !"--".equals( str ) ) {
++                        cmd.addArg( str );
++                    }
+                 }
+             }
+         }
+         checkRequiredOptions();
+         return cmd;
+     }
+
+commit dde69934d7f0bee13e4cd1fc99a7d60ce95a0c78
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sat Aug 24 22:15:31 2002 +0000
+
+    separated the argument flattening from the Option processing
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129804 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- /dev/null
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -0,0 +25,47 @@
++    public CommandLine parse( Options opts, 
++                              String[] args, 
++                              boolean stopAtNonOption ) 
++    throws ParseException 
++    {
++        options = opts;
++        requiredOptions = options.getRequiredOptions();
++        String[] tokens = flatten( opts, args, stopAtNonOption );
++        List tokenList = Arrays.asList( tokens );
++        ListIterator iterator = tokenList.listIterator();
++        cmd = new CommandLine();
++        boolean eatTheRest = false;
++        while( iterator.hasNext() ) {
++            String t = (String)iterator.next();
++            if( "--".equals( t ) ) {
++                eatTheRest = true;
++            }
++            else if( t.startsWith( "-" ) ) {
++                if( t.length() == 1 ) {
++                    // not an option, so just drop it on the argument list
++                    if ( stopAtNonOption ) {
++                        eatTheRest = true;
++                    }
++                    else {
++                        cmd.addArg( t );
++                    }
++                }
++                else {
++                    processOption( t, iterator );
++                }
++            }
++            else {
++                cmd.addArg( t );
++                if( stopAtNonOption ) {
++                    eatTheRest = true;
++                }
++            }
++
++            if( eatTheRest ) {
++                while( iterator.hasNext() ) {
++                    cmd.addArg( (String)iterator.next() );
++                }
++            }
++        }
++        checkRequiredOptions();
++        return cmd;
++    }

@@ -1,0 +1,82 @@
+commit 9b2b8038b52be022e42c8c7fdf26e236888f94c5
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Dec 9 23:47:26 2002 +0000
+
+    checkstyle fixes
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129857 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -113,6 +112,5 @@
+-    public CommandLine parse( Options options, 
+-                              String[] arguments ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments)
++                      throws ParseException
+     {
+-        return parse( options, arguments, null, false );
++        return parse(options, arguments, null, false);
+     }
+
+commit 347bbeb8f98a49744501ac50850457ba8751d545
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Nov 18 08:41:26 2002 +0000
+
+    refactored the option string handling, added property support for options with an argument value
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129846 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -111,4 +113,6 @@
+-    public CommandLine parse( Options options, String[] arguments ) 
++    public CommandLine parse( Options options, 
++                              String[] arguments ) 
+     throws ParseException 
+     {
+-        return parse( options, arguments, false );
++        return parse( options, arguments, null, false );
++    }
+
+commit d30f12f8fc30ddc2c30a08beea0c10d6d8f2029b
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sun Sep 1 22:54:56 2002 +0000
+
+    allowed characters are now isJavaIdentifierPart, added javadoc to Parser, minor refactoring for required options
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129809 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -19,4 +111,4 @@
+-    public CommandLine parse( Options opts, String[] args ) 
++    public CommandLine parse( Options options, String[] arguments ) 
+     throws ParseException 
+     {
+-        return parse( opts, args, false );
++        return parse( options, arguments, false );
+
+commit dde69934d7f0bee13e4cd1fc99a7d60ce95a0c78
+Author: John Keyes <jkeyes@apache.org>
+Date:   Sat Aug 24 22:15:31 2002 +0000
+
+    separated the argument flattening from the Option processing
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129804 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- /dev/null
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -0,0 +19,4 @@
++    public CommandLine parse( Options opts, String[] args ) 
++    throws ParseException 
++    {
++        return parse( opts, args, false );

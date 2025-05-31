@@ -1,0 +1,45 @@
+commit 9b2b8038b52be022e42c8c7fdf26e236888f94c5
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Dec 9 23:47:26 2002 +0000
+
+    checkstyle fixes
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129857 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -155,7 +152,6 @@
+-    public CommandLine parse( Options options, 
+-                              String[] arguments,
+-                              boolean stopAtNonOption ) 
+-    throws ParseException 
++    public CommandLine parse(Options options, String[] arguments, 
++                             boolean stopAtNonOption)
++        throws ParseException
+     {
+-        return parse( options, arguments, null, stopAtNonOption );
++        return parse(options, arguments, null, stopAtNonOption);
+     }
+
+commit 347bbeb8f98a49744501ac50850457ba8751d545
+Author: John Keyes <jkeyes@apache.org>
+Date:   Mon Nov 18 08:41:26 2002 +0000
+
+    refactored the option string handling, added property support for options with an argument value
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/proper/cli/trunk@129846 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/cli/Parser.java b/src/java/org/apache/commons/cli/Parser.java
+--- a/src/java/org/apache/commons/cli/Parser.java
++++ b/src/java/org/apache/commons/cli/Parser.java
+@@ -131,0 +155,7 @@
++    public CommandLine parse( Options options, 
++                              String[] arguments,
++                              boolean stopAtNonOption ) 
++    throws ParseException 
++    {
++        return parse( options, arguments, null, stopAtNonOption );
++    }
