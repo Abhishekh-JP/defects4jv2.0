@@ -27,20 +27,14 @@ import org.junit.Test;
 
 public class ArchiveServiceLoaderTest {
 
-    @Test
-    public void testInputStream() {}
-// Defects4J: flaky method
-//     @Test(expected = ArchiveInvocationConfirmationException.class)
-//     public void testInputStream() throws ArchiveException {
-//         new ArchiveStreamFactory().createArchiveInputStream("ArchiveTestInput1", new ByteArrayInputStream(new byte[] {}));
-//     }
+    @Test(expected = ArchiveInvocationConfirmationException.class)
+    public void testInputStream() throws ArchiveException {
+        new ArchiveStreamFactory().createArchiveInputStream("ArchiveTestInput1", new ByteArrayInputStream(new byte[] {}));
+    }
 
-    @Test
-    public void testOutputStream() {}
-// Defects4J: flaky method
-//     @Test(expected = ArchiveInvocationConfirmationException.class)
-//     public void testOutputStream() throws ArchiveException {
-//         new ArchiveStreamFactory().createArchiveOutputStream("ArchiveTestOutput1", new ByteArrayOutputStream());
-//     }
+    @Test(expected = ArchiveInvocationConfirmationException.class)
+    public void testOutputStream() throws ArchiveException {
+        new ArchiveStreamFactory().createArchiveOutputStream("ArchiveTestOutput1", new ByteArrayOutputStream());
+    }
 
 }

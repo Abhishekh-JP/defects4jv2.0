@@ -115,56 +115,53 @@ public class LongPathTest extends AbstractTestCase {
     }
 
     @Test
-    public void testArchive() {}
-// Defects4J: flaky method
-//     @Test
-//     public void testArchive() throws Exception {
-//         @SuppressWarnings("unchecked") // fileList is of correct type
-//         final
-//         ArrayList<String> expected = (ArrayList<String>) FILELIST.clone();
-//         final String name = file.getName();
-//         if ("minotaur.jar".equals(name) || "minotaur-0.jar".equals(name)){
-//             expected.add("META-INF/");
-//             expected.add("META-INF/MANIFEST.MF");
-//         }
-//         final ArchiveInputStream ais = factory.createArchiveInputStream(new BufferedInputStream(new FileInputStream(file)));
-//         // check if expected type recognized
-//         if (name.endsWith(".tar")){
-//             assertTrue(ais instanceof TarArchiveInputStream);
-//         } else if (name.endsWith(".jar") || name.endsWith(".zip")){
-//             assertTrue(ais instanceof ZipArchiveInputStream);
-//         } else if (name.endsWith(".cpio")){
-//             assertTrue(ais instanceof CpioArchiveInputStream);
-//             // Hack: cpio does not add trailing "/" to directory names
-//             for(int i=0; i < expected.size(); i++){
-//                 final String ent = expected.get(i);
-//                 if (ent.endsWith("/")){
-//                     expected.set(i, ent.substring(0, ent.length()-1));
-//                 }
-//             }
-//         } else if (name.endsWith(".ar")){
-//             assertTrue(ais instanceof ArArchiveInputStream);
-//             // CPIO does not store directories or directory names
-//             expected.clear();
-//             for (final String ent : FILELIST) {
-//                 if (!ent.endsWith("/")) {// not a directory
-//                     final int lastSlash = ent.lastIndexOf('/');
-//                     if (lastSlash >= 0) { // extract path name
-//                         expected.add(ent.substring(lastSlash + 1, ent.length()));
-//                     } else {
-//                         expected.add(ent);
-//                     }
-//                 }
-//             }
-//         } else {
-//             fail("Unexpected file type: "+name);
-//         }
-//         try {
-//             checkArchiveContent(ais, expected);
-//         } catch (final AssertionFailedError e) {
-//             fail("Error processing "+file.getName()+" "+e);
-//         } finally {
-//             ais.close();
-//         }
-//     }
+    public void testArchive() throws Exception {
+        @SuppressWarnings("unchecked") // fileList is of correct type
+        final
+        ArrayList<String> expected = (ArrayList<String>) FILELIST.clone();
+        final String name = file.getName();
+        if ("minotaur.jar".equals(name) || "minotaur-0.jar".equals(name)){
+            expected.add("META-INF/");
+            expected.add("META-INF/MANIFEST.MF");
+        }
+        final ArchiveInputStream ais = factory.createArchiveInputStream(new BufferedInputStream(new FileInputStream(file)));
+        // check if expected type recognized
+        if (name.endsWith(".tar")){
+            assertTrue(ais instanceof TarArchiveInputStream);
+        } else if (name.endsWith(".jar") || name.endsWith(".zip")){
+            assertTrue(ais instanceof ZipArchiveInputStream);
+        } else if (name.endsWith(".cpio")){
+            assertTrue(ais instanceof CpioArchiveInputStream);
+            // Hack: cpio does not add trailing "/" to directory names
+            for(int i=0; i < expected.size(); i++){
+                final String ent = expected.get(i);
+                if (ent.endsWith("/")){
+                    expected.set(i, ent.substring(0, ent.length()-1));
+                }
+            }
+        } else if (name.endsWith(".ar")){
+            assertTrue(ais instanceof ArArchiveInputStream);
+            // CPIO does not store directories or directory names
+            expected.clear();
+            for (final String ent : FILELIST) {
+                if (!ent.endsWith("/")) {// not a directory
+                    final int lastSlash = ent.lastIndexOf('/');
+                    if (lastSlash >= 0) { // extract path name
+                        expected.add(ent.substring(lastSlash + 1, ent.length()));
+                    } else {
+                        expected.add(ent);
+                    }
+                }
+            }
+        } else {
+            fail("Unexpected file type: "+name);
+        }
+        try {
+            checkArchiveContent(ais, expected);
+        } catch (final AssertionFailedError e) {
+            fail("Error processing "+file.getName()+" "+e);
+        } finally {
+            ais.close();
+        }
+    }
 }

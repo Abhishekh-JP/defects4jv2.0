@@ -27,20 +27,14 @@ import org.junit.Test;
 
 public class CompressorServiceLoaderTest {
 
-    @Test
-    public void testInputStream() {}
-// Defects4J: flaky method
-//     @Test(expected = InvocationConfirmationException.class)
-//     public void testInputStream() throws CompressorException {
-//         new CompressorStreamFactory().createCompressorInputStream("TestInput1", new ByteArrayInputStream(new byte[] {}));
-//     }
+    @Test(expected = InvocationConfirmationException.class)
+    public void testInputStream() throws CompressorException {
+        new CompressorStreamFactory().createCompressorInputStream("TestInput1", new ByteArrayInputStream(new byte[] {}));
+    }
 
-    @Test
-    public void testOutputStream() {}
-// Defects4J: flaky method
-//     @Test(expected = InvocationConfirmationException.class)
-//     public void testOutputStream() throws CompressorException {
-//         new CompressorStreamFactory().createCompressorOutputStream("TestOutput1", new ByteArrayOutputStream());
-//     }
+    @Test(expected = InvocationConfirmationException.class)
+    public void testOutputStream() throws CompressorException {
+        new CompressorStreamFactory().createCompressorOutputStream("TestOutput1", new ByteArrayOutputStream());
+    }
 
 }
