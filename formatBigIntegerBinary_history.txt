@@ -1,0 +1,362 @@
+commit 137aa57f9291b5f390de740266042587cfede7ce
+Author: Stefan Bodewig <bodewig@apache.org>
+Date:   Sat Jun 17 21:46:53 2017 +0200
+
+    add an extra sanity check
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -515,29 +515,33 @@
+     private static void formatBigIntegerBinary(final long value, final byte[] buf,
+                                                final int offset,
+                                                final int length,
+                                                final boolean negative) {
+         final BigInteger val = BigInteger.valueOf(value);
+         final byte[] b = val.toByteArray();
+         final int len = b.length;
++        if (len > length - 1) {
++            throw new IllegalArgumentException("Value " + value +
++                " is too large for " + length + " byte field.");
++        }
+         final int off = offset + length - len;
+         System.arraycopy(b, 0, buf, off, len);
+         final byte fill = (byte) (negative ? 0xff : 0);
+         for (int i = offset + 1; i < off; i++) {
+             buf[i] = fill;
+         }
+     }
+ 
+     /**
+      * Writes an octal value into a buffer.
+      * 
+      * Uses {@link #formatUnsignedOctalString} to format
+      * the value as an octal string with leading zeros.
+      * The converted number is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      * @throws IllegalArgumentException if the value (and trailer) will not fit in the buffer
+      */
+
+commit 3f2c760a4eb82d880e62a03cb9450d9dcf2793f7
+Author: ggregory <ggregory@apache.org>
+Date:   Sat Apr 9 10:10:28 2016 -0700
+
+    Add final modifier to local variables.
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -515,29 +515,29 @@
+     private static void formatBigIntegerBinary(final long value, final byte[] buf,
+                                                final int offset,
+                                                final int length,
+                                                final boolean negative) {
+-        BigInteger val = BigInteger.valueOf(value);
++        final BigInteger val = BigInteger.valueOf(value);
+         final byte[] b = val.toByteArray();
+         final int len = b.length;
+         final int off = offset + length - len;
+         System.arraycopy(b, 0, buf, off, len);
+         final byte fill = (byte) (negative ? 0xff : 0);
+         for (int i = offset + 1; i < off; i++) {
+             buf[i] = fill;
+         }
+     }
+ 
+     /**
+      * Writes an octal value into a buffer.
+      * 
+      * Uses {@link #formatUnsignedOctalString} to format
+      * the value as an octal string with leading zeros.
+      * The converted number is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      * @throws IllegalArgumentException if the value (and trailer) will not fit in the buffer
+      */
+
+commit 478bef366f84544eb4ac89553eeb7d57680fc521
+Author: ggregory <ggregory@apache.org>
+Date:   Sat Apr 9 10:06:38 2016 -0700
+
+    Add final modifier to method parameters.
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -515,29 +515,29 @@
+-    private static void formatBigIntegerBinary(final long value, byte[] buf,
++    private static void formatBigIntegerBinary(final long value, final byte[] buf,
+                                                final int offset,
+                                                final int length,
+                                                final boolean negative) {
+         BigInteger val = BigInteger.valueOf(value);
+         final byte[] b = val.toByteArray();
+         final int len = b.length;
+         final int off = offset + length - len;
+         System.arraycopy(b, 0, buf, off, len);
+         final byte fill = (byte) (negative ? 0xff : 0);
+         for (int i = offset + 1; i < off; i++) {
+             buf[i] = fill;
+         }
+     }
+ 
+     /**
+      * Writes an octal value into a buffer.
+      * 
+      * Uses {@link #formatUnsignedOctalString} to format
+      * the value as an octal string with leading zeros.
+      * The converted number is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      * @throws IllegalArgumentException if the value (and trailer) will not fit in the buffer
+      */
+
+commit b90b1f445d5b2317360b797afae22ecfccbdac94
+Author: Stefan Bodewig <bodewig@apache.org>
+Date:   Sat Mar 3 05:28:55 2012 +0000
+
+    Our parser for STAR-encoded binary values was wrong, STAR only uses 7 or 11 bytes and can encode negative values as twos complement signaled by the first byte being 0xff rather than 0x80.  COMPRESS-182
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/compress/trunk@1296576 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -343,18 +400,29 @@
+-        buf[offset] |= 0x80;
+-        return offset + length;
++    private static void formatBigIntegerBinary(final long value, byte[] buf,
++                                               final int offset,
++                                               final int length,
++                                               final boolean negative) {
++        BigInteger val = BigInteger.valueOf(value);
++        final byte[] b = val.toByteArray();
++        final int len = b.length;
++        final int off = offset + length - len;
++        System.arraycopy(b, 0, buf, off, len);
++        final byte fill = (byte) (negative ? 0xff : 0);
++        for (int i = offset + 1; i < off; i++) {
++            buf[i] = fill;
++        }
+     }
+ 
+     /**
+      * Writes an octal value into a buffer.
+      * 
+      * Uses {@link #formatUnsignedOctalString} to format
+      * the value as an octal string with leading zeros.
+      * The converted number is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      * @throws IllegalArgumentException if the value (and trailer) will not fit in the buffer
+      */
+
+commit a6fbdae7e9d765ba175374c78050dc391ddb1cb5
+Author: Stefan Bodewig <bodewig@apache.org>
+Date:   Thu Dec 8 14:03:57 2011 +0000
+
+    support writing big files using star extensions.  COMPRESS-165.  Patch by John Kodis.
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/compress/trunk@1211892 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -307,13 +342,18 @@
++        buf[offset] |= 0x80;
++        return offset + length;
++    }
++
++    /**
+      * Writes an octal value into a buffer.
+      * 
+      * Uses {@link #formatUnsignedOctalString} to format
+      * the value as an octal string with leading zeros.
+      * The converted number is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      * @throws IllegalArgumentException if the value (and trailer) will not fit in the buffer
+      */
+
+commit 1d5567004306b3c6019b4e828f811220fc3fe990
+Author: Sebastian Bazley <sebb@apache.org>
+Date:   Thu Apr 2 18:45:02 2009 +0000
+
+    Rename TarUtils.getXXX methods as formatXXX
+    Update Javadoc
+    Throw IllegalArgumentException if value won't fit in buffer
+    Treat long values as unsigned
+    Use String instead of StringBuffer for names etc
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/compress/trunk@761372 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -209,12 +219,13 @@
+      * Writes an octal value into a buffer.
+-     *
+-     * Converts the long value (assumed positive) to the buffer.
+-     * Adds leading zeros to the buffer.
+-     * Checksum is followed by NUL and then space.
++     * 
++     * Uses {@link #formatUnsignedOctalString} to format
++     * the value as an octal string with leading zeros.
++     * The converted number is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
++     * @throws IllegalArgumentException if the value (and trailer) will not fit in the buffer
+      */
+
+commit 91401bff7493957e0b7f5a91151d005a1d3b7a27
+Author: Sebastian Bazley <sebb@apache.org>
+Date:   Wed Apr 1 00:00:49 2009 +0000
+
+    Javadoc and test corrections
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/compress/trunk@760741 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -204,10 +209,12 @@
+      * Writes an octal value into a buffer.
+      *
++     * Converts the long value (assumed positive) to the buffer.
++     * Adds leading zeros to the buffer.
+      * Checksum is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      */
+
+commit 11349c5f52e0355a11ced6234ae424da73c9503b
+Author: Sebastian Bazley <sebb@apache.org>
+Date:   Tue Mar 31 23:49:20 2009 +0000
+
+    Extract generic octal formatting method to simplify code and eliminate array copies
+    Change leading padding to zeroes as that is more compatible (and required for Posix)
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/compress/trunk@760737 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -187,10 +204,10 @@
+      * Writes an octal value into a buffer.
+      *
+-     * TODO document fully. How does it differ from getOctalBytes?
++     * Checksum is followed by NUL and then space.
+      *
+      * @param value The value to convert
+      * @param buf The destination buffer
+      * @param offset The starting offset into the buffer.
+      * @param length The size of the buffer.
+      * @return The updated value of offset, i.e. offset+length
+      */
+
+commit ae3c158e05af20843fb5ea72deb5b7fb1fefbd54
+Author: Sebastian Bazley <sebb@apache.org>
+Date:   Tue Mar 31 16:24:28 2009 +0000
+
+    Attempt at Javadoc - needs refining...
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/proper/compress/trunk@760507 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -170,8 +187,10 @@
+-     * Parse the checksum octal integer from a header buffer.
++     * Writes an octal value into a buffer.
+      *
+-     * @param value The header value
+-     * @param buf The buffer from which to parse.
+-     * @param offset The offset into the buffer from which to parse.
+-     * @param length The number of header bytes to parse.
+-     * @return The integer value of the entry's checksum.
++     * TODO document fully. How does it differ from getOctalBytes?
++     *
++     * @param value The value to convert
++     * @param buf The destination buffer
++     * @param offset The starting offset into the buffer.
++     * @param length The size of the buffer.
++     * @return The updated value of offset, i.e. offset+length
+      */
+
+commit 46ad24db76c6f65480736006c2da8b8e5bf8ee25
+Author: Torsten Curdt <tcurdt@apache.org>
+Date:   Thu Jan 8 11:09:25 2009 +0000
+
+    applied patch from Christian Grobmeier
+    
+    updated tar implementation from ant
+    https://issues.apache.org/jira/browse/SANDBOX-273
+    
+    
+    
+    git-svn-id: https://svn.apache.org/repos/asf/commons/sandbox/compress/trunk@732682 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- a/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
++++ b/src/main/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -162,7 +169,8 @@
+-     * Parse an entry name from a header buffer.
++     * Parse the checksum octal integer from a header buffer.
+      *
+-     * @param header The header buffer from which to parse.
++     * @param value The header value
++     * @param buf The buffer from which to parse.
+      * @param offset The offset into the buffer from which to parse.
+      * @param length The number of header bytes to parse.
+-     * @return The header's entry name.
++     * @return The integer value of the entry's checksum.
+      */
+
+commit 88220840b463a195406648a93189f0321a5aa7e5
+Author: Torsten Curdt <tcurdt@apache.org>
+Date:   Mon Jul 31 10:55:10 2006 +0000
+
+    draft 8 from C. Grobmeier, grant has been received, cheers
+    
+    git-svn-id: https://svn.apache.org/repos/asf/jakarta/commons/sandbox/compress/trunk@427072 13f79535-47bb-0310-9956-ffa450edef68
+
+diff --git a/src/java/org/apache/commons/compress/archivers/tar/TarUtils.java b/src/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+--- /dev/null
++++ b/src/java/org/apache/commons/compress/archivers/tar/TarUtils.java
+@@ -0,0 +163,7 @@
++     * Parse an entry name from a header buffer.
++     *
++     * @param header The header buffer from which to parse.
++     * @param offset The offset into the buffer from which to parse.
++     * @param length The number of header bytes to parse.
++     * @return The header's entry name.
++     */
